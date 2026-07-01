@@ -1,5 +1,13 @@
 import { SERVICE_ROUTE_PREFIX } from './constants';
 import {
+  PullRecordsResponse,
+  PullRecordsResponseSchema,
+  PushRecordsRequest,
+  PushRecordsRequestSchema,
+  PushRecordsResponse,
+  PushRecordsResponseSchema,
+} from './records';
+import {
   ProvisionDeploymentRequest,
   ProvisionDeploymentRequestSchema,
   ProvisionDeploymentResponse,
@@ -91,5 +99,47 @@ export class ServiceClient {
       url: this.url(`deployments/${encodeURIComponent(deploymentId)}`),
       headers: this.headers(),
     });
+  }
+
+  /**
+   * Push a batch of canonical records to the hub (producer -> hub). The hub
+   * validates each record against the data type's effective schema and stores
+   * the valid ones; invalid records come back in `rejected`.
+   */
+  async pushRecords(
+    payload: PushRecordsRequest,
+  ): Promise<PushRecordsResponse> {
+    const body = PushRecordsRequestSchema.parse(payload);
+    const res = await this.opts.http.request<unknown>({
+      method: 'POST',
+      url: this.url('records'),
+      headers: this.headers(),
+      data: body,
+    });
+    return PushRecordsResponseSchema.parse(res.data);
+  }
+
+  /**
+   * Pull the records for a client + data type from the hub (consumer -> hub).
+   * Pass `since` (ISO-8601) for an incremental pull of changes only.
+   */
+  async pullRecords(query: {
+    dataType: string;
+    clientId: string;
+    since?: string;
+  }): Promise<PullRecordsResponse> {
+    const params = new URLSearchParams({
+      dataType: query.dataType,
+      client: query.clientId,
+    });
+    if (query.since) {
+      params.set('since', query.since);
+    }
+    const res = await this.opts.http.request<unknown>({
+      method: 'GET',
+      url: `${this.url('records')}?${params.toString()}`,
+      headers: this.headers(),
+    });
+    return PullRecordsResponseSchema.parse(res.data);
   }
 }

@@ -8,5 +8,6 @@ export * from './constants';
 export * from './enums';
 export * from './field';
 export * from './schemas';
+export * from './records';
 export * from './service-token';
 export * from './service-client';
