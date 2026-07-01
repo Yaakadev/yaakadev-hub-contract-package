@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Yaakadev/hub-contract.git"
+    "url": "git+https://github.com/Yaakadev/yaakadev-hub-contract-package.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
