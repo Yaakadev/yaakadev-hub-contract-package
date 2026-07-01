@@ -1,6 +1,6 @@
 {
   "name": "@yaakadev/hub-contract",
-  "version": "0.1.2",
+  "version": "0.3.0",
   "description": "Shared service-to-service contract (auth, schemas, guards) between the Yaakadev hub and its products.",
   "license": "UNLICENSED",
   "repository": {
@@ -27,6 +27,12 @@
     "./express": {
       "types": "./dist/express/index.d.ts",
       "default": "./dist/express/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "nestjs": ["dist/nestjs/index.d.ts"],
+      "express": ["dist/express/index.d.ts"]
     }
   },
   "files": [

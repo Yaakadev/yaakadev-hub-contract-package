@@ -10,6 +10,8 @@ import { ClientStatus, DeploymentStatus } from './enums';
 export const ClientRefSchema = z.object({
   /** hub Client `_id` — the cross-app correlation key. */
   id: z.string().min(1),
+  /** hub Client `slug` — becomes the tenant login code on the product (PASS: code société). */
+  slug: z.string().min(1),
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
@@ -38,6 +40,17 @@ export type ProvisionDeploymentRequest = z.infer<
   typeof ProvisionDeploymentRequestSchema
 >;
 
+/** First-admin onboarding info a product may return after creating a tenant. */
+export const OnboardingCredentialsSchema = z.object({
+  /** Tenant login code (PASS: code société). */
+  tenantCode: z.string().optional(),
+  /** First admin's login id (PASS: matricule). */
+  adminMatricule: z.string().optional(),
+  /** Generated first-admin password, to relay to the customer once. */
+  adminPassword: z.string().optional(),
+});
+export type OnboardingCredentials = z.infer<typeof OnboardingCredentialsSchema>;
+
 /** product -> hub: result of a provisioning call. */
 export const ProvisionDeploymentResponseSchema = z.object({
   /** Product-side tenant id created for this deployment. */
@@ -45,6 +58,8 @@ export const ProvisionDeploymentResponseSchema = z.object({
   /** URL where the tenant is reachable. */
   url: z.string().url(),
   status: z.nativeEnum(DeploymentStatus),
+  /** Present only right after creation (never re-returned on idempotent replays). */
+  credentials: OnboardingCredentialsSchema.optional(),
 });
 export type ProvisionDeploymentResponse = z.infer<
   typeof ProvisionDeploymentResponseSchema

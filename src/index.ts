@@ -6,6 +6,7 @@
  */
 export * from './constants';
 export * from './enums';
+export * from './field';
 export * from './schemas';
 export * from './service-token';
 export * from './service-client';
