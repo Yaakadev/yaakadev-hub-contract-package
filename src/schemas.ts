@@ -34,7 +34,12 @@ export const ProvisionDeploymentRequestSchema = z.object({
   /** Product slug (stable catalog id). */
   productSlug: z.string().min(1),
   client: ClientRefSchema,
-  admin: AdminAccountSchema,
+  /**
+   * First admin to create for the tenant. Optional: the hub only sends it for a
+   * foundation product or the client's first product; other deployments
+   * provision the tenant without creating an admin.
+   */
+  admin: AdminAccountSchema.optional(),
 });
 export type ProvisionDeploymentRequest = z.infer<
   typeof ProvisionDeploymentRequestSchema
