@@ -5,7 +5,8 @@ Shared **service-to-service contract** between the Yaakadev **hub** and its prod
 declarative: identical signed auth, one set of validated payload schemas, and
 ready-made guards/middleware — so an app physically cannot talk to the hub off-contract.
 
-Published to **GitHub Packages** under the `@yaakadev` scope.
+Published to **GitHub Packages** (public) under the `@yaakadev` scope. Note: even for a public
+package, GitHub requires a token with `read:packages` to install — that token is the only setup.
 
 ## What's inside
 
@@ -18,31 +19,29 @@ Published to **GitHub Packages** under the `@yaakadev` scope.
 The package has **no HTTP dependency** (works on Node 16 without global `fetch`): the
 `ServiceClient` takes your existing axios instance via a tiny `HttpClient` port.
 
-## Install (consumer setup)
+## Install
 
-Add an `.npmrc` at the root of each consuming repo:
+`@yaakadev/*` resolves from GitHub Packages, and GitHub requires auth even for public packages.
+Each consumer repo (hub, PASS, and this one) commits an `.npmrc`:
 
-```ini
+```
 @yaakadev:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-Then `NODE_AUTH_TOKEN` must be a GitHub token with `read:packages` scope:
+Then expose a token with the **`read:packages`** scope as `NODE_AUTH_TOKEN` — one env var, same
+name everywhere:
 
-- **Local dev / CI**: export `NODE_AUTH_TOKEN` (GitHub Actions: `${{ secrets.GITHUB_TOKEN }}`).
-- **Clever Cloud**: set the app env vars `CC_NPM_REGISTRY=npm.pkg.github.com` and
-  `NPM_TOKEN=<PAT with read:packages>` — Clever wires the registry auth at build time.
+- **Local dev** (fish): `set -Ux NODE_AUTH_TOKEN ghp_xxx`
+- **GitHub Actions**: `setup-node` injects `${{ secrets.GITHUB_TOKEN }}` automatically.
+- **Clever Cloud**: set the app env var `NODE_AUTH_TOKEN=ghp_xxx` (the committed `.npmrc` already
+  maps the scope, so `CC_NPM_REGISTRY` is not needed).
+
+Then, as usual:
 
 ```bash
 npm install @yaakadev/hub-contract
 ```
-
-> ⚠️ **Formatik caveat.** Formatik also depends on the *public* npmjs packages
-> `@yaakadev/node-scripts`, `@yaakadev/pdf-render`, `@yaakadev/ng-scripts-formation`.
-> npm routes an **entire scope** to one registry, so pointing `@yaakadev` at GitHub
-> Packages there means those three must **also** be published to GitHub Packages
-> (republish them), otherwise `npm install` breaks. The three NestJS backends
-> (hub, PASS, Oribam) have no other `@yaakadev/*` deps and are conflict-free.
 
 ## Usage
 
@@ -115,12 +114,16 @@ app.post('/service/deployments',
 
 ## Publish
 
-CI publishes on a version tag (`.github/workflows/publish.yml`):
+CI publishes to GitHub Packages on a version tag (`.github/workflows/publish.yml`, using the
+repo's built-in `GITHUB_TOKEN`):
 
 ```bash
 npm version patch   # or minor / major
 git push --follow-tags
 ```
+
+To publish by hand instead, export a token with `write:packages` as `NODE_AUTH_TOKEN`, then
+`npm run build && npm publish`.
 
 Semver **is** the contract: a breaking change to any schema or to the auth shape is a
 **major** bump; the hub and products pin a compatible range.
