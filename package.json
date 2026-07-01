@@ -1,6 +1,6 @@
 {
   "name": "@yaakadev/hub-contract",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Shared service-to-service contract (auth, schemas, guards) between the Yaakadev hub and its products.",
   "license": "UNLICENSED",
   "repository": {
